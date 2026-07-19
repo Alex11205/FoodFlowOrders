@@ -2,6 +2,7 @@ package com.alex.foodflow.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,7 +25,12 @@ public class Inventory {
     @Column(nullable = false)
     private String foodName;
 
-    @NotEmpty
+    @NotNull(message = "Available quantity cannot be empty")
     private int availableQuantity;
+
+    public Inventory(String foodName, int availableQuantity) {
+        this.foodName = foodName;
+        this.availableQuantity = availableQuantity;
+    }
 
 }
