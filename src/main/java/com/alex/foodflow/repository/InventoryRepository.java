@@ -27,4 +27,6 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long> {
                     """
             , nativeQuery = true)
     void updateInventory(@Param("id") Long id, @Param("quantity") int quantity);
+
+
 }
