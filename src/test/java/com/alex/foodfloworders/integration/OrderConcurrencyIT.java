@@ -1,4 +1,4 @@
-package com.alex.foodflow.integration;
+package com.alex.foodfloworders.integration;
 
 import com.alex.foodflow.exceptions.InsufficientInventoryException;
 import com.alex.foodflow.model.Inventory;
@@ -34,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.fail;
         },
         executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD
 )
-public class InventoryConcurrencyIT {
+public class OrderConcurrencyIT {
 
     @ServiceConnection
     static final PostgreSQLContainer<?> postgres =

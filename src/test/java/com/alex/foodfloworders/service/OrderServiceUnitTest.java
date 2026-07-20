@@ -1,20 +1,19 @@
-package com.alex.foodflow.service;
+package com.alex.foodfloworders.service;
 
-import com.alex.foodflow.repository.InventoryRepository;
-import org.junit.jupiter.api.Test;
+import com.alex.foodfloworders.repository.OrderRepository;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class InventoryServiceUnitTest {
+public class OrderServiceUnitTest {
 
     @Mock
-    private InventoryRepository inventoryRepository;
+    private OrderRepository orderyRepository;
 
     @InjectMocks
-    private InventoryService inventoryService;
+    private OrderService orderService;
 
 
 }

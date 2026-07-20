@@ -1,8 +1,9 @@
-package com.alex.foodflow.controller;
+package com.alex.foodfloworders.controller;
 
 
 import com.alex.foodflow.dto.OrderRequest;
 import com.alex.foodflow.service.InventoryService;
+import com.alex.foodfloworders.service.OrderService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,20 +13,19 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(InventoryController.class)
-public class InventoryControllerTest {
+@WebMvcTest(OrderController.class)
+public class OrderControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @MockitoBean
-    private InventoryService inventoryService;
+    private OrderService orderService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
