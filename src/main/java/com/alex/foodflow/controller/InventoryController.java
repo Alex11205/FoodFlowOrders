@@ -19,13 +19,14 @@ public class InventoryController {
     private final InventoryService inventoryService;
 
     @PostMapping("/{id}/reserve")
-    public ResponseEntity<Void> updateInventory(@Valid @RequestBody OrderRequest orderRequest,
+    public ResponseEntity<Integer> updateInventory(@Valid @RequestBody OrderRequest orderRequest,
                                                                    @PathVariable Long id) {
 
         int quantity = orderRequest.quantity();
-        inventoryService.updateInventory(id, quantity);
+        int rows = inventoryService.updateInventory(id, quantity);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok()
+                .body(rows);
 
     }
 }

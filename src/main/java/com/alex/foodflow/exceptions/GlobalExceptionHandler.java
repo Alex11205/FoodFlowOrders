@@ -36,11 +36,24 @@ public class GlobalExceptionHandler {
         ErrorResponse error = new ErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
                 "Bad Request",
-                "Malformed or missing JSON request body",
+                ex.getMessage(),
                 LocalDateTime.now()
         );
 
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(InsufficientInventoryException.class)
+    public ResponseEntity<ErrorResponse> handleInsufficientInventory(InsufficientInventoryException ex) {
+
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.CONFLICT.value(),
+                "Conflict",
+                "Insufficient inventory",
+                LocalDateTime.now()
+        );
+
+        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler(Exception.class)
@@ -55,6 +68,8 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+
 
 
 
