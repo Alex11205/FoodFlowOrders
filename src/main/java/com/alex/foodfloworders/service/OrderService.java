@@ -1,5 +1,6 @@
 package com.alex.foodfloworders.service;
 
+import com.alex.foodfloworders.client.InventoryClient;
 import com.alex.foodfloworders.dto.PostOrderRequest;
 import com.alex.foodfloworders.dto.OrderResponse;
 import com.alex.foodfloworders.exceptions.NoSuchOrderException;
@@ -16,6 +17,7 @@ import java.time.Instant;
 public class OrderService {
 
     private final OrderRepository orderRepository;
+    private final InventoryClient inventoryClient;
 
     public OrderResponse postOrder(PostOrderRequest postOrderRequest) {
         Order order = new Order(
@@ -28,7 +30,10 @@ public class OrderService {
 
         orderRepository.save(order);
 
-        boolean isReserved = true;
+        boolean isReserved = inventoryClient.reserveInventory(
+                postOrderRequest.foodId(),
+                postOrderRequest.quantity()
+        );
 
         order.setStatus(isReserved ? Status.CONFIRMED : Status.REJECTED);
 
