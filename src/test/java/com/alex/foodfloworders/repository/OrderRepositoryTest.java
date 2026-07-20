@@ -1,6 +1,7 @@
-package com.alex.foodflow.repository;
+package com.alex.foodfloworders.repository;
 
 import com.alex.foodflow.model.Inventory;
+import com.alex.foodfloworders.model.Order;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
@@ -16,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @DataJpaTest
 @Testcontainers
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-public class InventoryRepositoryTest {
+public class OrderRepositoryTest {
 
     @ServiceConnection
     static final PostgreSQLContainer<?> postgres =
@@ -27,7 +28,7 @@ public class InventoryRepositoryTest {
     }
 
     @Autowired
-    private InventoryRepository inventoryRepository;
+    private OrderRepository orderRepository;
 
     @Autowired
     private TestEntityManager testEntityManager;
@@ -39,13 +40,13 @@ public class InventoryRepositoryTest {
         int quantityAfter = 97;
         String foodName = "foodName";
 
-        Inventory inventory = new Inventory(null, foodName, quantityBefore);
+        Order inventory = new Order(null, foodName, quantityBefore);
 
         testEntityManager.persistAndFlush(inventory);
 
         Long id = inventory.getId();
 
-        int rows = inventoryRepository.updateInventory(id, quantity);
+        int rows = orderRepository.updateInventory(id, quantity);
         testEntityManager.clear();
         Inventory newInventory = testEntityManager.find(Inventory.class, id);
         assertEquals(quantityAfter, newInventory.getAvailableQuantity());
@@ -65,7 +66,7 @@ public class InventoryRepositoryTest {
 
         Long id = inventory.getId();
 
-        int rows = inventoryRepository.updateInventory(id, quantity);
+        int rows = orderRepository.updateInventory(id, quantity);
         testEntityManager.clear();
         Inventory newInventory = testEntityManager.find(Inventory.class, id);
 

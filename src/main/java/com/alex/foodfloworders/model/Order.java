@@ -1,4 +1,4 @@
-package com.alex.foodflow.model;
+package com.alex.foodfloworders.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
@@ -7,30 +7,37 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
+import java.time.Instant;
 
 @Entity
-@Table(
-        uniqueConstraints = {
-                @UniqueConstraint(name = "uk_inventory_foodName", columnNames = "foodName")
-        }
-)
+@Table(name = "orders")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
-public class Inventory {
+public class Order {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotEmpty(message = "Food name cannot be empty")
+    @NotNull(message = "foodId cannot be empty")
     @Column(nullable = false)
-    private String foodName;
+    private Long foodId;
 
-    @NotNull(message = "Available quantity cannot be empty")
-    private int availableQuantity;
+    @NotNull(message = "Quantity cannot be empty")
+    @Column(nullable = false)
+    private int quantity;
 
-    public Inventory(String foodName, int availableQuantity) {
-        this.foodName = foodName;
-        this.availableQuantity = availableQuantity;
-    }
+    @NotNull(message = "Status cannot be empty")
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(nullable = false, columnDefinition = "order_status")
+    private Status status;
+
+    @NotNull(message = "createdAt cannot be empty")
+    @Column(nullable = false)
+    private Instant createdAt;
+
 
 }

@@ -1,4 +1,4 @@
-package com.alex.foodflow.dto;
+package com.alex.foodfloworders.dto;
 
 public record UpdateInventoryResponse(
 

@@ -1,25 +1,59 @@
-package com.alex.foodflow.service;
+package com.alex.foodfloworders.service;
 
-import com.alex.foodflow.dto.UpdateInventoryResponse;
-import com.alex.foodflow.exceptions.InsufficientInventoryException;
-import com.alex.foodflow.repository.InventoryRepository;
+import com.alex.foodfloworders.dto.PostOrderRequest;
+import com.alex.foodfloworders.dto.OrderResponse;
+import com.alex.foodfloworders.exceptions.NoSuchOrderException;
+import com.alex.foodfloworders.model.Order;
+import com.alex.foodfloworders.model.Status;
+import com.alex.foodfloworders.repository.OrderRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+
 @Service
 @AllArgsConstructor
-public class InventoryService {
+public class OrderService {
 
-    private final InventoryRepository inventoryRepository;
+    private final OrderRepository orderRepository;
+
+    public OrderResponse postOrder(PostOrderRequest postOrderRequest) {
+        Order order = new Order(
+                null,
+                postOrderRequest.foodId(),
+                postOrderRequest.quantity(),
+                Status.PENDING,
+                Instant.now()
+        );
+
+        orderRepository.save(order);
+
+        boolean isReserved = true;
+
+        order.setStatus(isReserved ? Status.CONFIRMED : Status.REJECTED);
+
+        Order updatedOrder = orderRepository.save(order);
 
 
-    public int updateInventory(Long id, int quantity) {
+        return new OrderResponse(
+                updatedOrder.getFoodId(),
+                updatedOrder.getQuantity(),
+                updatedOrder.getStatus(),
+                updatedOrder.getCreatedAt()
+        );
 
-        int updatedInventory = inventoryRepository.updateInventory(id, quantity);
+    }
 
-        if (updatedInventory == 0)
-            throw new InsufficientInventoryException("Insufficient inventory");
+    public OrderResponse getOrderById(Long id) {
 
-        return updatedInventory;
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new NoSuchOrderException("No Such Order"));
+
+        return new OrderResponse(
+                order.getFoodId(),
+                order.getQuantity(),
+                order.getStatus(),
+                order.getCreatedAt()
+        );
     }
 }

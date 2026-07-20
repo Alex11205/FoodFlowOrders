@@ -1,6 +1,5 @@
-package com.alex.foodflow.exceptions;
+package com.alex.foodfloworders.exceptions;
 
-import jakarta.xml.bind.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +27,19 @@ public class GlobalExceptionHandler {
         );
 
         return new ResponseEntity<>(error,HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(NoSuchOrderException.class)
+    public ResponseEntity<ErrorResponse> handleNoSuchOrderExceptions(NoSuchOrderException ex) {
+
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.NOT_FOUND.value(),
+                "Not Found",
+                ex.getMessage(),
+                LocalDateTime.now()
+        );
+
+        return new ResponseEntity<>(error,HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)

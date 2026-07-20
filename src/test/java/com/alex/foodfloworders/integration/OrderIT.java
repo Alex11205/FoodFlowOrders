@@ -1,4 +1,4 @@
-package com.alex.foodflow.integration;
+package com.alex.foodfloworders.integration;
 
 import com.alex.foodflow.dto.OrderRequest;
 import com.alex.foodflow.model.Inventory;
@@ -30,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         },
         executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD
 )
-public class InventoryIT {
+public class OrderIT {
 
     @ServiceConnection
     static final PostgreSQLContainer<?> postgres =

@@ -1,4 +1,4 @@
-package com.alex.foodflow.exceptions;
+package com.alex.foodfloworders.exceptions;
 
 public class InsufficientInventoryException extends RuntimeException {
     public InsufficientInventoryException(String message) {
