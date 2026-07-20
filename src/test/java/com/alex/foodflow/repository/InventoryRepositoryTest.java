@@ -45,10 +45,11 @@ public class InventoryRepositoryTest {
 
         Long id = inventory.getId();
 
-        inventoryRepository.updateInventory(id, quantity);
+        int rows = inventoryRepository.updateInventory(id, quantity);
         testEntityManager.clear();
         Inventory newInventory = testEntityManager.find(Inventory.class, id);
         assertEquals(quantityAfter, newInventory.getAvailableQuantity());
+        assertEquals(1, rows);
     }
 
     @Test
@@ -64,10 +65,12 @@ public class InventoryRepositoryTest {
 
         Long id = inventory.getId();
 
-        inventoryRepository.updateInventory(id, quantity);
+        int rows = inventoryRepository.updateInventory(id, quantity);
         testEntityManager.clear();
         Inventory newInventory = testEntityManager.find(Inventory.class, id);
+
         assertEquals(quantityAfter, newInventory.getAvailableQuantity());
+        assertEquals(0, rows);
     }
 
 

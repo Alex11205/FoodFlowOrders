@@ -70,4 +70,5 @@ public class InventoryIT {
         assertEquals(quantityAfter, update.getAvailableQuantity());
     }
 
+
 }

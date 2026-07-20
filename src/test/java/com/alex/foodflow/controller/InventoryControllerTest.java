@@ -34,14 +34,15 @@ public class InventoryControllerTest {
 
         OrderRequest orderRequest = new OrderRequest(1);
 
-        willDoNothing().given(inventoryService).updateInventory(anyLong(), anyInt());
-//        when(inventoryService.updateInventory())
+        when(inventoryService.updateInventory(any(Long.class), any(Integer.class))).thenReturn(1);
 
         mockMvc.perform(post("/inventory/1/reserve")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(orderRequest)))
                 .andExpect(status().isOk());
+
     }
+
 
     @Test
     void updateInventory_shouldThrowBadRequest_WhenRequestBodyNotExistOrJsonIsMalformed() throws Exception {
