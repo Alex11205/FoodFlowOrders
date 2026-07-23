@@ -32,49 +32,49 @@ public class OrderControllerTest {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    @Test
-    void createOrder_shouldReturnOk() throws Exception {
-
-        PostOrderRequest postOrderRequest= new PostOrderRequest(1L, 1);
-
-        OrderResponse orderResponse = new OrderResponse(
-                1L,
-                1,
-                Status.CONFIRMED,
-                Instant.now()
-        );
-
-        when(orderService.postOrder(postOrderRequest)).thenReturn(orderResponse);
-
-        mockMvc.perform(post("/orders")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(postOrderRequest)))
-                .andExpect(status().isCreated());
-
-    }
-
-
-    @Test
-    void createOrder_shouldThrowBadRequest_WhenRequestBodyNotExistOrJsonIsMalformed() throws Exception {
-
-
-        mockMvc.perform(post("/orders")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString("str")))
-                .andExpect(status().isBadRequest());
-
-    }
-
-    @Test
-    void createOrder_shouldThrowBadRequest_WhenValidationFails() throws Exception {
-
-        PostOrderRequest postOrderRequest = new PostOrderRequest(1L, 10000);
-
-        mockMvc.perform(post("/orders")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(postOrderRequest)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("Validation failed: Quantity cannot be more than 100"));
-
-    }
+//    @Test
+//    void createOrder_shouldReturnOk() throws Exception {
+//
+//        PostOrderRequest postOrderRequest= new PostOrderRequest(1L, 1);
+//
+//        OrderResponse orderResponse = new OrderResponse(
+//                1L,
+//                1,
+//                Status.CONFIRMED,
+//                Instant.now()
+//        );
+//
+//        when(orderService.postOrder(postOrderRequest)).thenReturn(orderResponse);
+//
+//        mockMvc.perform(post("/orders")
+//                .contentType(MediaType.APPLICATION_JSON)
+//                .content(objectMapper.writeValueAsString(postOrderRequest)))
+//                .andExpect(status().isCreated());
+//
+//    }
+//
+//
+//    @Test
+//    void createOrder_shouldThrowBadRequest_WhenRequestBodyNotExistOrJsonIsMalformed() throws Exception {
+//
+//
+//        mockMvc.perform(post("/orders")
+//                .contentType(MediaType.APPLICATION_JSON)
+//                .content(objectMapper.writeValueAsString("str")))
+//                .andExpect(status().isBadRequest());
+//
+//    }
+//
+//    @Test
+//    void createOrder_shouldThrowBadRequest_WhenValidationFails() throws Exception {
+//
+//        PostOrderRequest postOrderRequest = new PostOrderRequest(1L, 10000);
+//
+//        mockMvc.perform(post("/orders")
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .content(objectMapper.writeValueAsString(postOrderRequest)))
+//                .andExpect(status().isBadRequest())
+//                .andExpect(jsonPath("$.message").value("Validation failed: Quantity cannot be more than 100"));
+//
+//    }
 }

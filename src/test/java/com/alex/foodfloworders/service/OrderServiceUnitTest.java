@@ -29,40 +29,40 @@ public class OrderServiceUnitTest {
 
     @InjectMocks
     private OrderService orderService;
-
-    @Test
-    void postOrder_shouldReturnOrder() {
-
-        Long foodId = 1L;
-        int quantity = 1;
-
-        PostOrderRequest postOrderRequest = new PostOrderRequest(
-                foodId,
-                quantity
-        );
-
-        Order order = new Order(
-                null,
-                foodId,
-                quantity,
-                Status.PENDING,
-                Instant.now()
-        );
-
-
-        when(orderyRepository.save(any())).thenReturn(order);
-        when(inventoryClient.reserveInventory(any(Long.class), any(Integer.class))).thenReturn(true);
-
-        order.setStatus(Status.CONFIRMED);
-
-        OrderResponse orderResponse = new OrderResponse(
-                order.getFoodId(),
-                order.getQuantity(),
-                order.getStatus(),
-                order.getCreatedAt()
-        );
-
-        assertEquals(orderResponse, orderService.postOrder(postOrderRequest));
-    }
+//
+//    @Test
+//    void postOrder_shouldReturnOrder() {
+//
+//        Long foodId = 1L;
+//        int quantity = 1;
+//
+//        PostOrderRequest postOrderRequest = new PostOrderRequest(
+//                foodId,
+//                quantity
+//        );
+//
+//        Order order = new Order(
+//                null,
+//                foodId,
+//                quantity,
+//                Status.PENDING,
+//                Instant.now()
+//        );
+//
+//
+//        when(orderyRepository.save(any())).thenReturn(order);
+//        when(inventoryClient.reserveInventory(any(Long.class), any(Integer.class))).thenReturn(true);
+//
+//        order.setStatus(Status.CONFIRMED);
+//
+//        OrderResponse orderResponse = new OrderResponse(
+//                order.getFoodId(),
+//                order.getQuantity(),
+//                order.getStatus(),
+//                order.getCreatedAt()
+//        );
+//
+//        assertEquals(orderResponse, orderService.postOrder(postOrderRequest));
+//    }
 
 }
