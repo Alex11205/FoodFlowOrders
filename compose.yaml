@@ -6,6 +6,11 @@ services:
       POSTGRES_DB: orderdb
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+
+    depends_on:
+      kafka:
+        condition: service_started
 
     ports:
       - "5432:5432"
@@ -14,6 +19,7 @@ services:
 
     secrets:
       - db_password
+
 volumes:
   order-postgres-data:
 
