@@ -18,15 +18,15 @@ public class InventoryController {
 
     private final InventoryService inventoryService;
 
-    @PostMapping("/{id}/reserve")
-    public ResponseEntity<Integer> updateInventory(@Valid @RequestBody OrderRequest orderRequest,
-                                                                   @PathVariable Long id) {
-
-        int quantity = orderRequest.quantity();
-        int rows = inventoryService.updateInventory(id, quantity);
-
-        return ResponseEntity.ok()
-                .body(rows);
-
-    }
+//    @PostMapping("/{id}/reserve")
+//    public ResponseEntity<Integer> updateInventory(@Valid @RequestBody OrderRequest orderRequest,
+//                                                                   @PathVariable Long id) {
+//
+//        int quantity = orderRequest.quantity();
+//        int rows = inventoryService.updateInventory(id, quantity);
+//
+//        return ResponseEntity.ok()
+//                .body(rows);
+//
+//    }
 }
