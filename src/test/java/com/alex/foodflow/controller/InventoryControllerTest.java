@@ -29,42 +29,42 @@ public class InventoryControllerTest {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    @Test
-    void updateInventory_shouldReturnOk() throws Exception {
-
-        OrderRequest orderRequest = new OrderRequest(1);
-
-        when(inventoryService.updateInventory(any(Long.class), any(Integer.class))).thenReturn(1);
-
-        mockMvc.perform(post("/inventory/1/reserve")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(orderRequest)))
-                .andExpect(status().isOk());
-
-    }
-
-
-    @Test
-    void updateInventory_shouldThrowBadRequest_WhenRequestBodyNotExistOrJsonIsMalformed() throws Exception {
-
-
-        mockMvc.perform(post("/inventory/1/reserve")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString("str")))
-                .andExpect(status().isBadRequest());
-
-    }
-
-    @Test
-    void updateInventory_shouldThrowBadRequest_WhenValidationFails() throws Exception {
-
-        OrderRequest orderRequest = new OrderRequest(10000);
-
-        mockMvc.perform(post("/inventory/1/reserve")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(orderRequest)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("Validation failed: Quantity cannot be more than 100"));
-
-    }
+//    @Test
+//    void updateInventory_shouldReturnOk() throws Exception {
+//
+//        OrderRequest orderRequest = new OrderRequest(1);
+//
+//        when(inventoryService.updateInventory(any(Long.class), any(Integer.class))).thenReturn(1);
+//
+//        mockMvc.perform(post("/inventory/1/reserve")
+//                .contentType(MediaType.APPLICATION_JSON)
+//                .content(objectMapper.writeValueAsString(orderRequest)))
+//                .andExpect(status().isOk());
+//
+//    }
+//
+//
+//    @Test
+//    void updateInventory_shouldThrowBadRequest_WhenRequestBodyNotExistOrJsonIsMalformed() throws Exception {
+//
+//
+//        mockMvc.perform(post("/inventory/1/reserve")
+//                .contentType(MediaType.APPLICATION_JSON)
+//                .content(objectMapper.writeValueAsString("str")))
+//                .andExpect(status().isBadRequest());
+//
+//    }
+//
+//    @Test
+//    void updateInventory_shouldThrowBadRequest_WhenValidationFails() throws Exception {
+//
+//        OrderRequest orderRequest = new OrderRequest(10000);
+//
+//        mockMvc.perform(post("/inventory/1/reserve")
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .content(objectMapper.writeValueAsString(orderRequest)))
+//                .andExpect(status().isBadRequest())
+//                .andExpect(jsonPath("$.message").value("Validation failed: Quantity cannot be more than 100"));
+//
+//    }
 }

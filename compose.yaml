@@ -6,6 +6,10 @@ services:
       POSTGRES_DB: inventorydb
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    depends_on:
+      kafka:
+        condition: service_started
 
     ports:
       - "5432:5432"
