@@ -7,14 +7,13 @@ import com.alex.foodfloworders.dto.PostOrderRequest;
 import com.alex.foodfloworders.dto.OrderResponse;
 import com.alex.foodfloworders.exceptions.NoSuchOrderException;
 import com.alex.foodfloworders.model.Order;
-import com.alex.foodfloworders.model.ProcessedEvent;
 import com.alex.foodfloworders.model.Status;
 import com.alex.foodfloworders.repository.OrderRepository;
-import com.alex.foodfloworders.repository.ProcessedEventRepository;
 import lombok.AllArgsConstructor;
 
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.kafka.annotation.BackOff;
 import org.springframework.kafka.annotation.DltHandler;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -37,7 +36,8 @@ import java.util.UUID;
 public class OrderService {
 
     private final OrderRepository orderRepository;
-    private final ProcessedEventRepository processedEventRepository;
+    private final IdempotencyCache idempotencyCache;
+    private final OrderEventProcessor orderEventProcessor;
 
 //    private final InventoryClient inventoryClient;
 
@@ -65,12 +65,33 @@ public class OrderService {
                 LocalDateTime.now()
         );
 
-        kafkaTemplate.send("orders-topic", order.getId().toString(), orderCreatedEvent);
+        kafkaTemplate.send("orders-topic", order.getId().toString(), orderCreatedEvent)
+                .whenComplete((result, exception) -> {
+                    if (exception == null) {
+                        log.atInfo()
+                                .addKeyValue("orderId", orderCreatedEvent.orderId())
+                                .addKeyValue("eventId", orderCreatedEvent.eventId())
+                                .addKeyValue("foodId", orderCreatedEvent.foodId())
+                                .addKeyValue("status", order.getStatus())
+                                .addKeyValue("topic", "orders-topic")
+                                .log("Order event published");
+                    } else {
+                        log.atError()
+                                .setCause(exception)
+                                .addKeyValue("orderId", orderCreatedEvent.orderId())
+                                .addKeyValue("eventId", orderCreatedEvent.eventId())
+                                .addKeyValue("foodId", orderCreatedEvent.foodId())
+                                .addKeyValue("status", order.getStatus())
+                                .addKeyValue("topic", "orders-topic")
+                                .log("Order event publishing failed");
+                    }
+                });
 
 //        boolean isReserved = inventoryClient.reserveInventory(
 //                postOrderRequest.foodId(),
 //                postOrderRequest.quantity()
 //        );
+
 
         return new OrderResponse(
                 updatedOrder.getFoodId(),
@@ -90,12 +111,15 @@ public class OrderService {
             dltTopicSuffix = "-dlt",
             dltStrategy = DltStrategy.ALWAYS_RETRY_ON_ERROR
     )
+
     @KafkaListener(topics = "inventory-topic", groupId = "order-group")
+    @CachePut(cacheNames = "orders", key = "#inventoryEvent.orderId()")
     public OrderResponse updateOrder(InventoryEvent inventoryEvent) {
         Long orderId = inventoryEvent.orderId();
         UUID eventId = inventoryEvent.eventId();
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new NoSuchOrderException("No such user"));
+        String consumer = "order";
+
+
 
         if ("FAIL".equals(inventoryEvent.eventType())) {
 
@@ -103,40 +127,26 @@ public class OrderService {
             throw new RuntimeException("Simulated business or parsing failure");
         }
 
-        if(!processedEventRepository.existsByEventId(eventId)) {
-
-
-            boolean isReserved = inventoryEvent.status();
-            order.setStatus(isReserved ? Status.CONFIRMED : Status.REJECTED);
-
-            Order updatedOrder = orderRepository.save(order);
-
-            ProcessedEvent processedEvent = new ProcessedEvent(
-                    null,
-                    eventId,
-                    "OrderService",
-                    Instant.now()
+        OrderEventProcessor.Result result;
+        if (!idempotencyCache.wasProcessed(consumer, eventId)) {
+            result = orderEventProcessor.process(inventoryEvent);
+            idempotencyCache.remember(consumer, eventId);
+        } else {
+            result = new OrderEventProcessor.Result(
+                    false,
+                    orderEventProcessor.findResponse(orderId)
             );
-
-            processedEventRepository.save(processedEvent);
-
-            return new OrderResponse(
-                    updatedOrder.getFoodId(),
-                    updatedOrder.getQuantity(),
-                    updatedOrder.getStatus(),
-                    updatedOrder.getCreatedAt()
-            );
-
         }
 
+        log.atInfo()
+                .addKeyValue("orderId", orderId)
+                .addKeyValue("eventId", eventId)
+                .addKeyValue("status", result.response().status())
+                .log(result.processed()
+                        ? "Order status updated"
+                        : "Duplicate inventory event ignored");
 
-
-        return new OrderResponse(
-                order.getFoodId(),
-                order.getQuantity(),
-                order.getStatus(),
-                order.getCreatedAt()
-        );
+        return result.response();
     }
 
     @DltHandler
@@ -144,10 +154,15 @@ public class OrderService {
             InventoryEvent inventoryEvent,
             @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
             @Header(KafkaHeaders.EXCEPTION_MESSAGE) String errorMessage) {
-        log.error("Message {} failed all 4 attempts. Sent to Dead Letter Topic: {}. Message: {}", inventoryEvent, topic, errorMessage);
-
+        log.atError()
+                .addKeyValue("orderId", inventoryEvent.orderId())
+                .addKeyValue("eventId", inventoryEvent.eventId())
+                .addKeyValue("topic", topic)
+                .addKeyValue("errorMessage", errorMessage)
+                .log("Inventory event exhausted retries and reached DLT");
     }
 
+    @Cacheable(cacheNames = "orders", key = "#id")
     public OrderResponse getOrderById(Long id) {
 
         Order order = orderRepository.findById(id)
