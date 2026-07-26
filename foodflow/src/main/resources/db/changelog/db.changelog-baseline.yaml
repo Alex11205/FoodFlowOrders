@@ -1,0 +1,58 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-create-inventory
+      author: alex
+      changes:
+        - createTable:
+            tableName: inventory
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_inventory_id
+              - column:
+                  name: food_name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+                    uniqueConstraintName: uk_inventory_food_name
+              - column:
+                  name: available_quantity
+                  type: INTEGER
+                  constraints:
+                    nullable: false
+  - changeSet:
+      id: 002-create-processedEvent
+      author: alex
+      changes:
+        - createTable:
+            tableName: processed_event
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_processed_event_id
+              - column:
+                  name: event_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    unique: true
+                    uniqueConstraintName: uk_processed_event_event_id
+              - column:
+                  name: consumer_name
+                  type: VARCHAR(255)
+              - column:
+                  name: processed_at
+                  type: TIMESTAMP WITH TIME ZONE
+
+
