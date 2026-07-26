@@ -1,0 +1,7 @@
+.git
+.idea
+**/target
+**/.idea
+**/*.iml
+db_password.txt
+backup
