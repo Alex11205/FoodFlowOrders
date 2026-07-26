@@ -1,0 +1,72 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-create-orders
+      author: alex
+      changes:
+        - sql:
+              dbms: postgresql
+              sql: CREATE TYPE order_status AS ENUM ('PENDING', 'CONFIRMED', 'REJECTED')
+        - createTable:
+            tableName: orders
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_orders_id
+              - column:
+                  name: food_id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    nullable: false
+              - column:
+                  name: quantity
+                  type: INTEGER
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: order_status
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  constraints:
+                    nullable: false
+  - changeSet:
+      id: 002-create-processedEvent
+      author: alex
+      changes:
+        - createTable:
+            tableName: processed_event
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_processed_event_id
+              - column:
+                  name: event_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    unique: true
+                    uniqueConstraintName: uk_processed_event_event_id
+              - column:
+                  name: consumer_name
+                  type: VARCHAR(255)
+              - column:
+                  name: processed_at
+                  type: TIMESTAMP WITH TIME ZONE
+
+
+
+
