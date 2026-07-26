@@ -39,7 +39,7 @@ build/
 
 
 
-@'
+
 .idea/
 .agents/
 .codex/
@@ -52,4 +52,3 @@ secret.env
 db_password.txt
 **/db_password.txt
 
-'@ | Set-Content -Encoding ascii .gitignore
