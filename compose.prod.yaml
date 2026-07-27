@@ -160,6 +160,7 @@ services:
       - prometheus
 
 
+
   nginx:
     image: nginx:-alpine
     restart: unless-stopped
