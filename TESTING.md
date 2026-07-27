@@ -46,3 +46,9 @@ path:
 This Compose test proves container networking, Kafka serialization, consumer
 groups, and the entire workflow. Keep most business cases in the faster
 service-level suites instead of duplicating every scenario end to end.
+
+## Load tests
+
+The k6 suite under `load-tests/` sends orders at a constant arrival rate,
+measures time to a terminal order status, and verifies the inventory invariant
+afterward. See `load-tests/README.md` for smoke, load, and rejection scenarios.

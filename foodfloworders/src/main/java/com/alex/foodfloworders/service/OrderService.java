@@ -94,6 +94,7 @@ public class OrderService {
 
 
         return new OrderResponse(
+                updatedOrder.getId(),
                 updatedOrder.getFoodId(),
                 updatedOrder.getQuantity(),
                 updatedOrder.getStatus(),
@@ -169,6 +170,7 @@ public class OrderService {
                 .orElseThrow(() -> new NoSuchOrderException("No Such Order"));
 
         return new OrderResponse(
+                order.getId(),
                 order.getFoodId(),
                 order.getQuantity(),
                 order.getStatus(),

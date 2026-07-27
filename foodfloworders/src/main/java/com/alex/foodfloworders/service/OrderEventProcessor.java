@@ -48,6 +48,7 @@ public class OrderEventProcessor {
 
     private OrderResponse toResponse(Order order) {
         return new OrderResponse(
+                order.getId(),
                 order.getFoodId(),
                 order.getQuantity(),
                 order.getStatus(),

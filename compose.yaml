@@ -5,8 +5,8 @@ services:
       POSTGRES_DB: orderdb
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD_FILE: /run/secrets/db_password
-    ports:
-      - "5432:5432"
+#    ports:
+#      - "5432:5432"
     volumes:
       - order-postgres-data:/var/lib/postgresql/data
     healthcheck:
@@ -23,8 +23,8 @@ services:
       POSTGRES_DB: inventorydb
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD_FILE: /run/secrets/db_password
-    ports:
-      - "5433:5432"
+#    ports:
+#      - "5433:5432"
     volumes:
       - inventory-postgres-data:/var/lib/postgresql/data
     healthcheck:
@@ -49,6 +49,12 @@ services:
       REDIS_PORT: 6379
       LOGGING_STRUCTURED_FORMAT_CONSOLE: ecs
       LOGGING_STRUCTURED_ECS_SERVICE_ENVIRONMENT: local-docker
+    healthcheck:
+      test: [ "CMD-SHELL", "wget -qO- http://localhost:9002/actuator/health > /dev/null || exit 1" ]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
     ports:
       - "8081:8081"
       - "9002:9002"
@@ -77,6 +83,12 @@ services:
       REDIS_PORT: 6379
       LOGGING_STRUCTURED_FORMAT_CONSOLE: ecs
       LOGGING_STRUCTURED_ECS_SERVICE_ENVIRONMENT: local-docker
+    healthcheck:
+      test: [ "CMD-SHELL", "wget -qO- http://localhost:9001/actuator/health > /dev/null || exit 1" ]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
     ports:
       - "8080:8080"
       - "9001:9001"
@@ -84,7 +96,7 @@ services:
       order-db:
         condition: service_healthy
       inventory-service:
-        condition: service_started
+        condition: service_healthy
       kafka:
         condition: service_started
       redis:
@@ -93,10 +105,10 @@ services:
       - db_password
 
   kafka:
-    image: apache/kafka:latest
+    image: apache/kafka:4.3.0
     container_name: kafka
-    ports:
-      - "29092:29092"
+#    ports:
+#      - "29092:29092"
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: 'broker,controller'
@@ -114,8 +126,8 @@ services:
 
   redis:
     image: redis:7-alpine
-    ports:
-      - "6379:6379"
+#    ports:
+#      - "6379:6379"
     healthcheck:
       test: [ "CMD", "redis-cli", "ping" ]
       interval: 5s
@@ -123,15 +135,15 @@ services:
       retries: 10
 
   prometheus:
-    image: prom/prometheus:latest
-    ports:
-      - "9090:9090"
+    image: prom/prometheus:v3.13.1
+#    ports:
+#      - "9090:9090"
     volumes:
       - ./observability/prometheus.yaml:/etc/prometheus/prometheus.yml:ro
       - prometheus-data:/prometheus
 
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana:13.1.1
     ports:
       - "3000:3000"
     volumes:
