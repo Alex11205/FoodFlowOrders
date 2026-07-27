@@ -1,0 +1,24 @@
+services:
+  k6:
+    image: grafana/k6:2.0.0
+    profiles: [ "load" ]
+    environment:
+      BASE_URL: http://order-service:8080
+      FOOD_ID: ${FOOD_ID:-1}
+      QUANTITY: ${QUANTITY:-1}
+      EXPECTED_STATUS: ${EXPECTED_STATUS:-CONFIRMED}
+      RATE: ${RATE:-5}
+      DURATION: ${DURATION:-1m}
+      PRE_ALLOCATED_VUS: ${PRE_ALLOCATED_VUS:-20}
+      MAX_VUS: ${MAX_VUS:-100}
+      POLL_INTERVAL_SECONDS: ${POLL_INTERVAL_SECONDS:-0.2}
+      WORKFLOW_TIMEOUT_MS: ${WORKFLOW_TIMEOUT_MS:-10000}
+      MAX_ERROR_RATE: ${MAX_ERROR_RATE:-0.01}
+      MAX_POST_P95_MS: ${MAX_POST_P95_MS:-500}
+      MAX_WORKFLOW_P95_MS: ${MAX_WORKFLOW_P95_MS:-5000}
+    volumes:
+      - ./load-tests:/scripts:ro
+    command: [ "run", "/scripts/order-flow.js" ]
+    depends_on:
+      order-service:
+        condition: service_healthy
