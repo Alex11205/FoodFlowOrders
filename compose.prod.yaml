@@ -158,7 +158,9 @@ services:
       - grafana-data:/var/lib/grafana
     depends_on:
       - prometheus
-      -
+
+
+
   nginx:
     image: nginx:-alpine
     restart: unless-stopped
