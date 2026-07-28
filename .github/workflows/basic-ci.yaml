@@ -33,8 +33,13 @@ jobs:
         run: mvn clean verify
   deploy-images:
     needs: build-and-test
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/master' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    concurrency:
+      group: foodflow-production
+      cancel-in-progress: false
 
     permissions:
       contents: read
@@ -66,3 +71,71 @@ jobs:
 
           docker push "$ECR_REGISTRY/foodflow-order:$GITHUB_SHA"
           docker push "$ECR_REGISTRY/foodflow-inventory:$GITHUB_SHA"
+
+      - name: Deploy on EC2 through SSM
+        env:
+          EC2_INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
+          EC2_DEPLOY_DIR: ${{ vars.EC2_DEPLOY_DIR }}
+          EC2_DEPLOY_USER: ${{ vars.EC2_DEPLOY_USER }}
+        run: |
+          set -Eeuo pipefail
+
+          if [[ -z "$EC2_INSTANCE_ID" ]]; then
+            echo "Set the EC2_INSTANCE_ID GitHub Actions repository variable." >&2
+            exit 1
+          fi
+
+          if [[ -z "$EC2_DEPLOY_DIR" ]] || [[ "$EC2_DEPLOY_DIR" != /* ]]; then
+            echo "Set EC2_DEPLOY_DIR to the absolute path of the EC2 Git checkout." >&2
+            exit 1
+          fi
+
+          DEPLOY_USER="${EC2_DEPLOY_USER:-ssm-user}"
+          if [[ ! "$DEPLOY_USER" =~ ^[a-z_][a-z0-9_-]*$ ]]; then
+            echo "EC2_DEPLOY_USER is not a valid Linux username." >&2
+            exit 1
+          fi
+
+          PARAMETERS="$(jq -n \
+            --arg sha "$GITHUB_SHA" \
+            --arg region "$AWS_REGION" \
+            --arg deploy_dir "$EC2_DEPLOY_DIR" \
+            --arg deploy_user "$DEPLOY_USER" \
+            '{
+              commands: [
+                "set -Eeuo pipefail",
+                ("test -d " + (($deploy_dir + "/.git") | @sh) + " || { echo \"The configured EC2 deployment directory is not a Git checkout.\" >&2; exit 1; }"),
+                ("test -z \"$(sudo -u " + ($deploy_user | @sh) + " -H git -C " + ($deploy_dir | @sh) + " status --porcelain)\" || { echo \"The EC2 checkout has local changes. Stash or commit them before deploying.\" >&2; exit 1; }"),
+                ("sudo -u " + ($deploy_user | @sh) + " -H git -C " + ($deploy_dir | @sh) + " fetch --prune origin master"),
+                ("sudo -u " + ($deploy_user | @sh) + " -H git -C " + ($deploy_dir | @sh) + " cat-file -e " + (($sha + "^{commit}") | @sh)),
+                ("sudo -u " + ($deploy_user | @sh) + " -H git -C " + ($deploy_dir | @sh) + " switch --detach " + ($sha | @sh)),
+                ("sudo -u " + ($deploy_user | @sh) + " -H env AWS_REGION=" + ($region | @sh) + " bash " + (($deploy_dir + "/deployment/deploy.sh") | @sh) + " " + ($sha | @sh))
+              ]
+            }')"
+
+          COMMAND_ID="$(aws ssm send-command \
+            --instance-ids "$EC2_INSTANCE_ID" \
+            --document-name AWS-RunShellScript \
+            --comment "Deploy FoodFlow $GITHUB_SHA" \
+            --timeout-seconds 900 \
+            --parameters "$PARAMETERS" \
+            --query 'Command.CommandId' \
+            --output text)"
+
+          set +e
+          aws ssm wait command-executed \
+            --command-id "$COMMAND_ID" \
+            --instance-id "$EC2_INSTANCE_ID"
+          WAIT_STATUS=$?
+          set -e
+
+          RESULT="$(aws ssm get-command-invocation \
+            --command-id "$COMMAND_ID" \
+            --instance-id "$EC2_INSTANCE_ID" \
+            --query '{Status:Status,StandardOutput:StandardOutputContent,StandardError:StandardErrorContent}' \
+            --output json)"
+          echo "$RESULT"
+
+          if [[ "$WAIT_STATUS" -ne 0 ]] || [[ "$(jq -r '.Status' <<<"$RESULT")" != "Success" ]]; then
+            exit 1
+          fi
