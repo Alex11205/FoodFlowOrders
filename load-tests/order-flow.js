@@ -11,6 +11,12 @@ function numberFromEnvironment(name, fallback) {
 }
 
 const baseUrl = (__ENV.BASE_URL || 'http://order-service:8080').replace(/\/$/, '');
+if (!/^https?:\/\//i.test(baseUrl)) {
+  throw new Error(
+    `BASE_URL must include http:// or https://; received "${baseUrl}"`
+  );
+}
+
 const foodId = numberFromEnvironment('FOOD_ID', 1);
 const quantity = numberFromEnvironment('QUANTITY', 1);
 const rate = numberFromEnvironment('RATE', 5);
@@ -138,6 +144,7 @@ export default function () {
   const terminal = status === 'CONFIRMED' || status === 'REJECTED';
   const matchesExpectation =
     terminal && (expectedStatus === 'ANY' || status === expectedStatus);
+  const workflowElapsedMs = Date.now() - workflowStartedAt;
 
   workflowCompleted.add(terminal);
   expectedStatusReached.add(matchesExpectation);
@@ -145,7 +152,17 @@ export default function () {
   terminalOrders.add(1, { status: terminal ? status : 'INCOMPLETE' });
 
   if (terminal) {
-    workflowDuration.add(Date.now() - workflowStartedAt, { status });
+    workflowDuration.add(workflowElapsedMs, { status });
+  } else {
+    console.warn(
+      `Order ${orderId} remained ${status} after ${workflowElapsedMs} ms and ${polls} polls`
+    );
+  }
+
+  if (terminal && !matchesExpectation) {
+    console.warn(
+      `Order ${orderId} reached ${status}; expected ${expectedStatus}`
+    );
   }
 
   check({ status, terminal }, {
